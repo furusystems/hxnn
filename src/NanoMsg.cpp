@@ -37,7 +37,6 @@ extern "C" {
     }
 
     // http://nanomsg.org/v0.3/nn_close.3.html
-    // TODO: throws exception
     static value hxnn_close(value sock) {
         val_check(sock, socket);
         int ret = nn_close(val_socket(sock));
@@ -121,7 +120,6 @@ extern "C" {
     }
 
     // http://nanomsg.org/v0.3/nn_shutdown.3.html
-    // TODO: throws exception
     static value hxnn_shutdown(value sock, value address) {
         if (!val_is_socket(sock)) {
             val_throw(alloc_int(EBADF));
@@ -142,14 +140,14 @@ extern "C" {
     }
 
     // http://nanomsg.org/v0.3/nn_socket.3.html
-    // TODO: support domains and protocols
+    // TODO: add socket to gc_finalizer to ensure everything is closed
     static value hxnn_socket(value domain, value protocol) {
         if (!val_is_int(domain) || !val_is_int(protocol)) {
             val_throw(alloc_int(EINVAL));
             return val_null;
         }
 
-        socket sock = nn_socket(AF_SP, NN_BUS);
+        socket sock = nn_socket(val_int(domain), val_int(protocol));
         if (sock < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;

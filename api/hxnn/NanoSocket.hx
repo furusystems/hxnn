@@ -140,9 +140,8 @@ class NanoSocket
             NanoSocket.hxnn_shutdown(this.handle, cnx);
             this.conns.remove(cnx);
         } catch (ex:Dynamic) {
-            if (ex != 35 && ex != 60) { // TODO: resource temporary unavailable (35)
-                throw new NanoException(ex);
-            }
+            // TODO: thrown very often, needs work
+            // throw new NanoException(ex);
         }
     }
 
