@@ -38,12 +38,14 @@ extern "C" {
 
     // http://nanomsg.org/v0.3/nn_close.3.html
     // TODO: throws exception
-    static void hxnn_close(value sock) {
+    static value hxnn_close(value sock) {
         val_check(sock, socket);
         int ret = nn_close(val_socket(sock));
         if (ret != 0) {
            val_throw(alloc_int(nn_errno()));
        }
+
+       return alloc_int(ret);
     }
 
     // http://nanomsg.org/v0.3/nn_connect.3.html
@@ -120,20 +122,23 @@ extern "C" {
 
     // http://nanomsg.org/v0.3/nn_shutdown.3.html
     // TODO: throws exception
-    static void hxnn_shutdown(value sock, value address) {
+    static value hxnn_shutdown(value sock, value address) {
         if (!val_is_socket(sock)) {
             val_throw(alloc_int(EBADF));
-            return;
+            return val_null;
         }
         if (!val_is_int(address)) {
             val_throw(alloc_int(EINVAL));
-            return;
+            return val_null;
         }
 
         int ret = nn_shutdown(val_socket(sock), val_int(address));
-        if (ret != 0) {
+        if (sock != 0) {
             val_throw(alloc_int(nn_errno()));
+            return val_null;
         }
+
+        return alloc_int(ret);
     }
 
     // http://nanomsg.org/v0.3/nn_socket.3.html
