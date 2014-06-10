@@ -1,0 +1,16 @@
+{
+    "name": "hxnn",
+    "url" : "https://github.com/MaddinXx/hxnn",
+    "license": "MIT",
+    "tags": ["zeromq", "nanomsg", "socket", "communication", "ipc", "neko", "cpp"],
+    "description": "Haxe (C++/Neko) language bindings for the nanomsg library.",
+    "classPath": "api",
+    "dependencies": {
+        "hxstd": ""
+    },
+    "version": "0.1.0",
+    "releasenote": "Initial release",
+    "contributors": [
+        "MaddinXx"
+    ]
+}
