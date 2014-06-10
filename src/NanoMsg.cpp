@@ -47,7 +47,7 @@ extern "C"
            val_throw(alloc_int(nn_errno()));
        }
 
-       return alloc_int(ret);
+       return val_null;
     }
 
     // http://nanomsg.org/v0.3/nn_connect.3.html
@@ -66,31 +66,39 @@ extern "C"
     }
 
     // http://nanomsg.org/v0.3/nn_getsockopt.3.html
-    static value hxnn_getsockopt(value sock, value level, value option, value optsize)
+    static value hxnn_getsockopt(value sock, value level, value option)
     {
         val_check(sock, socket);
         val_check(level, int);
         val_check(option, int);
-        val_check(optsize, int);
 
-        int* buf = NULL;
-        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), (void*)&buf, val_int(optsize));
+        // get option size
+        int    opt       = val_int(option);
+        if (opt < 0) opt = -opt;
+        size_t optsize   = 1;
+        while ((opt = opt / 10) > 1) {
+            ++optsize;
+        }
+
+        void* buf = NULL;
+        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), &buf, optsize);
         if (ret < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return alloc_int(*buf);
+        return alloc_int((intptr_t)buf);
     }
 
     // http://nanomsg.org/v0.3/nn_recv.3.html
-    static value hxnn_recv(value sock, value length)
+    static value hxnn_recv(value sock, value length, value flags)
     {
         val_check(sock, socket);
         val_check(length, int);
+        val_check(flags, int);
 
         char buf[val_int(length)];
-        int recv = nn_recv(val_socket(sock), buf, sizeof(buf), 0);
+        int recv = nn_recv(val_socket(sock), buf, sizeof(buf), val_int(flags));
         if (recv < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
@@ -100,12 +108,13 @@ extern "C"
     }
 
     // http://nanomsg.org/v0.3/nn_recv.3.html
-    static value hxnn_recv_all(value sock)
+    static value hxnn_recv_all(value sock, value flags)
     {
         val_check(sock, socket);
+        val_check(flags, int);
 
         void* buf = NULL;
-        int recv  = nn_recv(val_socket(sock), &buf, NN_MSG, 0);
+        int recv  = nn_recv(val_socket(sock), &buf, NN_MSG, val_int(flags));
         if (recv < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
@@ -115,12 +124,13 @@ extern "C"
     }
 
     // http://nanomsg.org/v0.3/nn_send.3.html
-    static value hxnn_send(value sock, value message)
+    static value hxnn_send(value sock, value message, value flags)
     {
         val_check(sock, socket);
         val_check(message, string);
+        val_check(flags, int);
 
-        int sent = nn_send(val_socket(sock), val_string(message), val_strlen(message), 0);
+        int sent = nn_send(val_socket(sock), val_string(message), val_strlen(message), val_int(flags));
         if (sent < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
@@ -130,23 +140,28 @@ extern "C"
     }
 
     // http://nanomsg.org/v0.3/nn_setsockopt.3.html
-    static value hxnn_setsockopt(value sock, value level, value option, value optval, value optsize)
+    static value hxnn_setsockopt(value sock, value level, value option, value optval)
     {
         val_check(sock, socket);
         val_check(level, int);
         val_check(option, int);
         val_check(optval, int);
-        val_check(optsize, int);
 
-        void* optvalue = (void*)(intptr_t)val_int(optval);
+        // get option size
+        int    opt       = val_int(option);
+        if (opt < 0) opt = -opt;
+        size_t optsize   = 1;
+        while ((opt = opt / 10) > 1) {
+            ++optsize;
+        }
 
-        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), optvalue, val_int(optsize));
+        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), (void*)(intptr_t)val_int(optval), optsize);
         if (ret < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return alloc_int(ret);
+        return val_null;
     }
 
     // http://nanomsg.org/v0.3/nn_shutdown.3.html
@@ -161,7 +176,7 @@ extern "C"
             return val_null;
         }
 
-        return alloc_int(ret);
+        return val_null;
     }
 
     // http://nanomsg.org/v0.3/nn_socket.3.html
@@ -185,10 +200,10 @@ extern "C"
 DEFINE_PRIM(hxnn_bind, 2);
 DEFINE_PRIM(hxnn_close, 1);
 DEFINE_PRIM(hxnn_connect, 2);
-DEFINE_PRIM(hxnn_getsockopt, 4);
-DEFINE_PRIM(hxnn_recv, 2);
-DEFINE_PRIM(hxnn_recv_all, 1);
-DEFINE_PRIM(hxnn_send, 2);
-DEFINE_PRIM(hxnn_setsockopt, 5);
+DEFINE_PRIM(hxnn_getsockopt, 3);
+DEFINE_PRIM(hxnn_recv, 3);
+DEFINE_PRIM(hxnn_recv_all, 2);
+DEFINE_PRIM(hxnn_send, 3);
+DEFINE_PRIM(hxnn_setsockopt, 4);
 DEFINE_PRIM(hxnn_shutdown, 2);
 DEFINE_PRIM(hxnn_socket, 2);
