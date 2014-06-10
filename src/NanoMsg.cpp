@@ -23,7 +23,6 @@ extern "C"
         int addr  = 0;
 
         gc_enter_blocking();
-        while (nn_shutdown(vsock, addr++) == 0) {}
         nn_setsockopt(vsock, NN_SOL_SOCKET, NN_LINGER, 0, sizeof(int));
         int ret = nn_close(vsock);
         gc_exit_blocking();
