@@ -71,16 +71,16 @@ extern "C"
         val_check(sock, socket);
         val_check(level, int);
         val_check(option, int);
-        val_check(optsiz, int);
+        val_check(optsize, int);
 
-        void* buf = NULL;
-        int ret = nn_setsockopt(val_sock(sock), val_int(level), val_int(option), &optval, val_int(optsize));
+        int* buf = NULL;
+        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), (void*)&buf, val_int(optsize));
         if (ret < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return alloc_int((int*)buf);
+        return alloc_int(*buf);
     }
 
     // http://nanomsg.org/v0.3/nn_recv.3.html
@@ -136,9 +136,11 @@ extern "C"
         val_check(level, int);
         val_check(option, int);
         val_check(optval, int);
-        val_check(optsiz, int);
+        val_check(optsize, int);
 
-        int ret = nn_setsockopt(val_sock(sock), val_int(level), val_int(option), val_int(optval), val_int(optsize));
+        void* optvalue = (void*)(intptr_t)val_int(optval);
+
+        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), optvalue, val_int(optsize));
         if (ret < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
