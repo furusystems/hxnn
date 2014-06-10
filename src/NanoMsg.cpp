@@ -19,7 +19,7 @@ extern "C"
     // called by val_gc when a nanomsg socket gets garbage collected
     static void finalize_socket(value sock)
     {
-        int vsock = val_socket(sock);
+        const int vsock = val_socket(sock);
         int addr  = 0;
 
         gc_enter_blocking();
@@ -113,14 +113,14 @@ extern "C"
         val_check(sock, socket);
         val_check(flags, int);
 
-        void* buf = NULL;
+        char* buf = NULL;
         int recv  = nn_recv(val_socket(sock), &buf, NN_MSG, val_int(flags));
         if (recv < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return alloc_string((char*)buf);
+        return alloc_string(buf);
     }
 
     // http://nanomsg.org/v0.3/nn_send.3.html
@@ -130,7 +130,7 @@ extern "C"
         val_check(message, string);
         val_check(flags, int);
 
-        int sent = nn_send(val_socket(sock), val_string(message), val_strlen(message), val_int(flags));
+        int sent = nn_send(val_socket(sock), val_string(message), val_strlen(message) + 1, val_int(flags)); // +1 for \0
         if (sent < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
@@ -145,11 +145,21 @@ extern "C"
         val_check(sock, socket);
         val_check(level, int);
         val_check(option, int);
-        val_check(optval, int);
 
-        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), &optval, sizeof(int));
+        const void* val;
+        size_t size;
+        if (val_is_int(optval)) {
+            val  = (void*)(intptr_t)val_int(optval);
+            size = sizeof(int);
+        } else {
+            val = val_string(optval);
+            size = sizeof(val);
+        }
+
+        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), &val, size);
         if (ret < 0) {
-            val_throw(alloc_int(nn_errno()));
+            val_throw(alloc_string(nn_strerror(nn_errno())));
+            //val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
