@@ -158,8 +158,7 @@ extern "C"
 
         int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), &val, size);
         if (ret < 0) {
-            val_throw(alloc_string(nn_strerror(nn_errno())));
-            //val_throw(alloc_int(nn_errno()));
+            val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
