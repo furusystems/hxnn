@@ -35,6 +35,7 @@
 
         <!-- link to libnanomsg installed through homebrew -->
         <lib name="/usr/local/Cellar/nanomsg/0.3-beta/lib/libnanomsg.a" if="macos" />
+        <lib name="/usr/local/lib/libnanomsg.a" unless="macos" />
     </target>
 
     <!-- specifies default hxcpp build tool target -->
