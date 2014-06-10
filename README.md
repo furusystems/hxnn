@@ -1,14 +1,6 @@
-# hxstd [![Build Status](https://ci.rackster.ch/buildStatus/icon?job=hxstd)](https://ci.rackster.ch/job/hxstd/)
+# hxnn [![Build Status](https://ci.rackster.ch/buildStatus/icon?job=hxnn)](https://ci.rackster.ch/job/hxnn/)
 
-> A completing yet alternative standard library for Haxe.
-
-## Compilation Flags
-
-`-D HXSTD_DEBUG` which enables debug mode. Setting this flag will tell the `Exceptions` to include full Call- and ExceptionStack information. Though this can be helpful during development, it should not be enabled for production/releases as the operations are expensive.
-
-`-D HXSTD_INLINE` which will inline various helper methods such as `isEmpty()` etc. Enabling this _may_ increase performance but prevent you from overriding those methods in subclasses.
-
-`-D HXSTD_WIN` which will tell the library that we are compiling on a Windows system. This flag is used in `hxstdm.vm.Lock` class, as `SemaphoreSlim` doesn't work on non-Windows environments.
+> Haxe (C++/Neko) language bindings for the nanomsg library.
 
 ## License
 
