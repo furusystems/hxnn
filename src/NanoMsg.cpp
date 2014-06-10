@@ -23,7 +23,7 @@ extern "C"
         int addr  = 0;
 
         gc_enter_blocking();
-        while (nn_shutdown(vsock, addr++) == 0) {}
+        while (nn_shutdown(vsock, addr++) == 0) {}
         nn_setsockopt(vsock, NN_SOL_SOCKET, NN_LINGER, 0, sizeof(int));
         int ret = nn_close(vsock);
         gc_exit_blocking();
@@ -72,6 +72,7 @@ extern "C"
     }
 
     // http://nanomsg.org/v0.3/nn_getsockopt.3.html
+    // TODO: support string options
     static value hxnn_getsockopt(value sock, value level, value option)
     {
         val_check(sock, socket);
@@ -103,7 +104,7 @@ extern "C"
             return val_null;
         }
 
-        return alloc_string((char*)buf);
+        return alloc_string(buf);
     }
 
     // http://nanomsg.org/v0.3/nn_recv.3.html
