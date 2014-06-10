@@ -12,7 +12,7 @@
     <!-- Define all cpp files that need to be compiled into the nanomsg.ndll -->
     <files id="files">
         <!-- Set up include folder paths -->
-        <compilerflag value="-I./include" />
+        <compilerflag value="-I./../include" />
 
         <!-- Special flags for compiling on MacOSX 64 bit. May need for linux 64bit too?  -->
         <compilerflag value="-D_FILE_OFFSET_BITS=64" if="macos" />
