@@ -1,44 +1,72 @@
-<xml>
-    <!-- Build file for nanomsg.ndll -->
-    <!-- Install hxcpp and run with 'haxelib run hxcpp build.xml' -->
-    <include name="${HXCPP}/build-tool/BuildCommon.xml" />
+<project name="hxnn" default="exit" basedir=".">
+    <description>Haxe (C++/Neko) language bindings for the nanomsg library.</description>
 
-    <!-- Set library search paths for nanomsg etc -->
-    <set name="LIB_DIR" value="-Llib" unless="windows" />
-    <set name="LIB_DIR" value="-libpath:lib" if="windows" />
+    <property environment="env" />
+    <property name="workspace" location="${env.WORKSPACE}" />
+    <property name="api" location="${workspace}/api" />
+    <property name="src" location="${workspace}/src" />
+    <property name="build" location="${workspace}/build" />
+    <property name="reports"  location="${workspace}/reports" />
 
-    <set name="DBG" value="d" if="debug" />
-
-    <!-- Define all cpp files that need to be compiled into the nanomsg.ndll -->
-    <files id="files">
-        <!-- Set up include folder paths -->
-        <compilerflag value="-I./include" />
-
-        <!-- Special flags for compiling on MacOSX 64 bit. May need for linux 64bit too?  -->
-        <compilerflag value="-D_FILE_OFFSET_BITS=64" if="macos" />
-        <compilerflag value="-D_LARGE_FILES=64" if="macos" />
-
-        <!-- List of cpp files to be compiled -->
-        <file name="src/NanoMsg.cpp" />
-    </files>
-
-    <!-- define compiler build & linking target -->
-    <target id="nanomsg.ndll" tool="linker" toolid="dll" output="nanomsg">
-        <ext value=".ndll" />
-
-        <!-- output directory for linker. -->
-        <!-- ${BINDIR} substituted by hxcpp build tool for your platform e.g. "Windows", "Mac64" -->
-        <outdir name="ndll/${BINDIR}" />
-
-        <!-- specific previously deifned list of files to compile -->
-        <files id="files" />
-
-        <!-- link to libnanomsg installed through homebrew -->
-        <lib name="/usr/local/Cellar/nanomsg/0.3-beta/lib/libnanomsg.a" if="macos" />
+    <target name="init" description="Creates the directories needed to store output">
+        <echo>Creating all required directories...</echo>
+        <mkdir dir="${reports}" />
     </target>
 
-    <!-- specifies default hxcpp build tool target -->
-    <target id="default">
-        <target id="nanomsg.ndll" />
+    <target name="build" depends="init" description="Builds the bindings">
+        <echo>Compiling the source code...</echo>
+        <exec executable="haxelib" resultproperty="build.code">
+            <arg value="run" />
+            <arg value="hxcpp" />
+            <arg value="${build}/build.hxml" />
+            <arg value="-DHXCPP_M64" />
+        </exec>
+        <condition property="build.failed">
+            <isfailure code="${build.code}" />
+        </condition>
     </target>
-</xml>
+
+    <target name="cloc" depends="build" description="Counts the lines of code">
+        <echo>Counting lines of code...</echo>
+        <exec executable="cloc">
+            <arg value="--ignore-whitespace" />
+            <arg value="--read-lang-def=/usr/share/cloc/defs/haxe.txt" />
+            <arg value="--by-file" />
+            <arg value="--xml" />
+            <arg value="-out=${reports}/cloc.xml" />
+            <arg value="${api}" />
+            <arg value="${src}" />
+        </exec>
+
+        <exec executable="xsltproc">
+            <arg value="-o" />
+            <arg value="${reports}/sloccount.sc" />
+            <arg value="/usr/share/cloc/cloc2sloccount.xsl" />
+            <arg value="${reports}/cloc.xml" />
+        </exec>
+    </target>
+
+    <target name="checkstyle" depends="cloc" description="Runs the checkstyle analysis tool">
+        <echo>Performing Checkstyle analysis...</echo>
+        <exec executable="checkstyle">
+            <arg value="-c" />
+            <arg value="${build}/checkstyle.xml" />
+            <arg value="-f" />
+            <arg value="xml" />
+            <arg value="-o" />
+            <arg value="${reports}/checkstyle.xml" />
+            <arg value="-r" />
+            <arg value="${api}" />
+        </exec>
+    </target>
+
+    <target name="cleanup" depends="checkstyle" description="Removes compiled files and directories">
+        <echo>Removing (temporary) directories...</echo>
+        <delete dir="${workspace}/.temp" />
+    </target>
+
+    <target name="exit" depends="cleanup" description="Marks the build as failed if one of the targets failed">
+        <fail if="build.failed">Build step failed. Check output log for more information.</fail>
+        <echo>Everything went well. Good job!</echo>
+    </target>
+</project>
