@@ -23,13 +23,12 @@ extern "C"
         int addr  = 0;
 
         gc_enter_blocking();
-        while (nn_shutdown(vsock, addr) == 0) {
-            ++addr;
-        }
+        while (nn_shutdown(vsock, addr++) == 0) {}
+        nn_setsockopt(vsock, NN_SOL_SOCKET, NN_LINGER, 0, sizeof(int));
         int ret = nn_close(vsock);
         gc_exit_blocking();
         if (ret != 0) {
-           val_throw(alloc_int(55));
+           val_throw(alloc_int(nn_errno()));
        }
     }
 
