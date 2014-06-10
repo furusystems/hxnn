@@ -65,7 +65,11 @@ class NanoSocket
      */
     public function new(domain:NanoDomain, protocol:NanoProtocol):Void
     {
-        this.handle = NanoSocket.hxnn_socket(domain, protocol);
+        try {
+            this.handle = NanoSocket.hxnn_socket(domain, protocol);
+        } catch (ex:Dynamic) {
+            throw new NanoException(ex);
+        }
         this.conns  = new Array<Connection>();
     }
 
@@ -137,7 +141,12 @@ class NanoSocket
     }
 
     /**
+     * Returns the value of the given option.
      *
+     * @param hxnn.NanoLevel  level  the level on which the option is valid
+     * @param hxnn.NanoOption option the option to get the value for
+     *
+     * @return Int the option's value
      */
     public function getOption(level:NanoLevel, option:NanoOption):Int
     {
@@ -198,7 +207,11 @@ class NanoSocket
     }
 
     /**
+     * Sets the value of the given option.
      *
+     * @param hxnn.NanoLevel  level  the level on which the option is valid
+     * @param hxnn.NanoOption option the option to set the value for
+     * @param Int             value  the value to set for the option
      */
     public function setOption(level:NanoLevel, option:NanoOption, value:Int):Void
     {
@@ -228,8 +241,7 @@ class NanoSocket
             NanoSocket.hxnn_shutdown(this.handle, cnx);
             this.conns.remove(cnx);
         } catch (ex:Dynamic) {
-            // TODO: thrown very often, needs work
-            // throw new NanoException(ex);
+            throw new NanoException(ex);
         }
     }
 

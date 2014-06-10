@@ -1,4 +1,3 @@
-// Copyright (c) MaddinXx 2014
 #include "NanoMsg.hpp"
 #include <hx/CFFI.h>
 
@@ -17,9 +16,21 @@
 
 extern "C"
 {
+    // called by val_gc when a nanomsg socket gets garbage collected
     static void finalize_socket(value sock)
     {
-        hxnn_close(sock);
+        int vsock = val_socket(sock);
+        int addr  = 0;
+
+        gc_enter_blocking();
+        while (nn_shutdown(vsock, addr) == 0) {
+            ++addr;
+        }
+        int ret = nn_close(vsock);
+        gc_exit_blocking();
+        if (ret != 0) {
+           val_throw(alloc_int(55));
+       }
     }
 
     // http://nanomsg.org/v0.3/nn_bind.3.html
@@ -41,13 +52,9 @@ extern "C"
     static value hxnn_close(value sock)
     {
         val_check(sock, socket);
+        finalize_socket(sock);
 
-        int ret = nn_close(val_socket(sock));
-        if (ret != 0) {
-           val_throw(alloc_int(nn_errno()));
-       }
-
-       return val_null;
+       return alloc_int(0);
     }
 
     // http://nanomsg.org/v0.3/nn_connect.3.html
@@ -72,22 +79,15 @@ extern "C"
         val_check(level, int);
         val_check(option, int);
 
-        // get option size
-        int    opt       = val_int(option);
-        if (opt < 0) opt = -opt;
-        size_t optsize   = 1;
-        while ((opt = opt / 10) > 1) {
-            ++optsize;
-        }
-
-        void* buf = NULL;
-        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), &buf, optsize);
+        int val;
+        size_t valsize = sizeof(val);
+        int ret = nn_getsockopt(val_socket(sock), val_int(level), val_int(option), &val, &valsize);
         if (ret < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return alloc_int((intptr_t)buf);
+        return alloc_int(val);
     }
 
     // http://nanomsg.org/v0.3/nn_recv.3.html
@@ -147,21 +147,13 @@ extern "C"
         val_check(option, int);
         val_check(optval, int);
 
-        // get option size
-        int    opt       = val_int(option);
-        if (opt < 0) opt = -opt;
-        size_t optsize   = 1;
-        while ((opt = opt / 10) > 1) {
-            ++optsize;
-        }
-
-        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), (void*)(intptr_t)val_int(optval), optsize);
+        int ret = nn_setsockopt(val_socket(sock), val_int(level), val_int(option), &optval, sizeof(int));
         if (ret < 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return val_null;
+        return alloc_int(0);
     }
 
     // http://nanomsg.org/v0.3/nn_shutdown.3.html
@@ -171,12 +163,12 @@ extern "C"
         val_check(address, int);
 
         int ret = nn_shutdown(val_socket(sock), val_int(address));
-        if (sock != 0) {
+        if (ret != 0) {
             val_throw(alloc_int(nn_errno()));
             return val_null;
         }
 
-        return val_null;
+        return alloc_int(0);
     }
 
     // http://nanomsg.org/v0.3/nn_socket.3.html
