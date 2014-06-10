@@ -16,23 +16,27 @@ class NanoSocket
      * References to the native nanomsg function implementations loaded through C FFI.
      */
     #if cpp
-        private static var hxnn_bind:Socket->String->Connection         = cpp.Lib.load("nanomsg", "hxnn_bind", 2);
-        private static var hxnn_close:Socket->Void                      = cpp.Lib.load("nanomsg", "hxnn_close", 1);
-        private static var hxnn_connect:Socket->String->Connection      = cpp.Lib.load("nanomsg", "hxnn_connect", 2);
-        private static var hxnn_recv:Socket->Int->String                = cpp.Lib.load("nanomsg", "hxnn_recv", 2);
-        private static var hxnn_recv_all:Socket->String                 = cpp.Lib.load("nanomsg", "hxnn_recv_all", 1);
-        private static var hxnn_send:Socket->String->Int                = cpp.Lib.load("nanomsg", "hxnn_send", 2);
-        private static var hxnn_shutdown:Socket->Connection->Int        = cpp.Lib.load("nanomsg", "hxnn_shutdown", 2);
-        private static var hxnn_socket:NanoDomain->NanoProtocol->Socket = cpp.Lib.load("nanomsg", "hxnn_socket", 2);
+        private static var hxnn_bind:Socket->String->Connection            = cpp.Lib.load("nanomsg", "hxnn_bind", 2);
+        private static var hxnn_close:Socket->Void                         = cpp.Lib.load("nanomsg", "hxnn_close", 1);
+        private static var hxnn_connect:Socket->String->Connection         = cpp.Lib.load("nanomsg", "hxnn_connect", 2);
+        private static var hxnn_getsockopt:Socket->Int->Int->Int->Int      = cpp.Lib.load("nanomsg", "hxnn_getsockopt", 4);
+        private static var hxnn_recv:Socket->Int->String                   = cpp.Lib.load("nanomsg", "hxnn_recv", 2);
+        private static var hxnn_recv_all:Socket->String                    = cpp.Lib.load("nanomsg", "hxnn_recv_all", 1);
+        private static var hxnn_send:Socket->String->Int                   = cpp.Lib.load("nanomsg", "hxnn_send", 2);
+        private static var hxnn_setsockopt:Socket->Int->Int->Int->Int->Int = cpp.Lib.load("nanomsg", "hxnn_setsockopt", 5);
+        private static var hxnn_shutdown:Socket->Connection->Int           = cpp.Lib.load("nanomsg", "hxnn_shutdown", 2);
+        private static var hxnn_socket:NanoDomain->NanoProtocol->Socket    = cpp.Lib.load("nanomsg", "hxnn_socket", 2);
     #elseif neko
-        private static var hxnn_bind:Socket->String->Connection         = neko.Lib.load("nanomsg", "hxnn_bind", 2);
-        private static var hxnn_close:Socket->Void                      = neko.Lib.load("nanomsg", "hxnn_close", 1);
-        private static var hxnn_connect:Socket->String->Connection      = neko.Lib.load("nanomsg", "hxnn_connect", 2);
-        private static var hxnn_recv:Socket->Int->String                = neko.Lib.load("nanomsg", "hxnn_recv", 2);
-        private static var hxnn_recv_all:Socket->String                 = neko.Lib.load("nanomsg", "hxnn_recv_all", 1);
-        private static var hxnn_send:Socket->String->Int                = neko.Lib.load("nanomsg", "hxnn_send", 2);
-        private static var hxnn_shutdown:Socket->Connection->Int        = neko.Lib.load("nanomsg", "hxnn_shutdown", 2);
-        private static var hxnn_socket:NanoDomain->NanoProtocol->Socket = neko.Lib.load("nanomsg", "hxnn_socket", 2);
+        private static var hxnn_bind:Socket->String->Connection            = neko.Lib.load("nanomsg", "hxnn_bind", 2);
+        private static var hxnn_close:Socket->Void                         = neko.Lib.load("nanomsg", "hxnn_close", 1);
+        private static var hxnn_connect:Socket->String->Connection         = neko.Lib.load("nanomsg", "hxnn_connect", 2);
+        private static var hxnn_getsockopt:Socket->Int->Int->Int->Int      = neko.Lib.load("nanomsg", "hxnn_getsockopt", 4);
+        private static var hxnn_recv:Socket->Int->String                   = neko.Lib.load("nanomsg", "hxnn_recv", 2);
+        private static var hxnn_recv_all:Socket->String                    = neko.Lib.load("nanomsg", "hxnn_recv_all", 1);
+        private static var hxnn_send:Socket->String->Int                   = neko.Lib.load("nanomsg", "hxnn_send", 2);
+        private static var hxnn_setsockopt:Socket->Int->Int->Int->Int->Int = neko.Lib.load("nanomsg", "hxnn_setsockopt", 5);
+        private static var hxnn_shutdown:Socket->Connection->Int           = neko.Lib.load("nanomsg", "hxnn_shutdown", 2);
+        private static var hxnn_socket:NanoDomain->NanoProtocol->Socket    = neko.Lib.load("nanomsg", "hxnn_socket", 2);
     #end
 
     /**
@@ -48,6 +52,8 @@ class NanoSocket
      * @var Array<hxnn.NanoSocket.Connection>
      */
     private var conns:Array<Connection>;
+
+    private var failures:Int = 0;
 
 
     /**
@@ -130,22 +136,6 @@ class NanoSocket
     }
 
     /**
-     * Closes the open Connection and removes it from Socket.
-     *
-     * @param hxnn.NanoSocket.Connection cnx the Connection to shutdown
-     */
-    public function shutdown(cnx:Connection):Void
-    {
-        try {
-            NanoSocket.hxnn_shutdown(this.handle, cnx);
-            this.conns.remove(cnx);
-        } catch (ex:Dynamic) {
-            // TODO: thrown very often, needs work
-            // throw new NanoException(ex);
-        }
-    }
-
-    /**
      * Reads n bytes from the Socket's input stream.
      *
      * @param Int bytes the number of bytes to read
@@ -172,6 +162,22 @@ class NanoSocket
             return NanoSocket.hxnn_recv_all(this.handle);
         } catch (ex:Dynamic) {
             throw new NanoException(ex);
+        }
+    }
+
+    /**
+     * Closes the open Connection and removes it from Socket.
+     *
+     * @param hxnn.NanoSocket.Connection cnx the Connection to shutdown
+     */
+    public function shutdown(cnx:Connection):Void
+    {
+        try {
+            NanoSocket.hxnn_shutdown(this.handle, cnx);
+            this.conns.remove(cnx);
+        } catch (ex:Dynamic) {
+            // TODO: thrown very often, needs work
+            // throw new NanoException(ex);
         }
     }
 
