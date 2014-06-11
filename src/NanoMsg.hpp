@@ -1,8 +1,8 @@
 #ifndef NANOMSG_HPP
 #define NANOMSG_HPP
 
-#define IMPLEMENT_API
-#define NEKO_COMPATIBLE 1
+#define  IMPLEMENT_API
+#define  NEKO_COMPATIBLE 1
 #include <hx/CFFI.h>
 
 extern "C" {
