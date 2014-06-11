@@ -6,6 +6,14 @@ package hxnn;
 @:enum
 abstract NanoLevel(Int) from Int to Int
 {
+    // transport-specific levels
+    var NN_INPROC     = -1;
+    var NN_IPC        = -2;
+    var NN_TCP        = -3;
+
+    // generic socket-level
+    var NN_SOL_SOCKET = 0;
+
     // socket-type-specific levels
     var NN_PAIR       = 16;
     var NN_REQ        = 48;
@@ -17,12 +25,4 @@ abstract NanoLevel(Int) from Int to Int
     var NN_SURVEYOR   = 96;
     var NN_RESPONDENT = 97;
     var NN_BUS        = 112;
-
-    // generic socket-level
-    var NN_SOL_SOCKET = 0;
-
-    // transport-specific levels
-    var NN_INPROC     = -1;
-    var NN_IPC        = -2;
-    var NN_TCP        = -3;
 }

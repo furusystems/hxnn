@@ -9,13 +9,13 @@ abstract NanoProtocol(Int) from Int to Int
     // http://nanomsg.org/v0.3/nn_pair.7.html
     var NN_PAIR = 16;
 
-    // http://nanomsg.org/v0.3/nn_reqrep.7.html
-    var NN_REQ = 48;
-    var NN_REP = 49;
-
     // http://nanomsg.org/v0.3/nn_pubsub.7.html
     var NN_PUB = 32;
     var NN_SUB = 33;
+
+    // http://nanomsg.org/v0.3/nn_reqrep.7.html
+    var NN_REQ = 48;
+    var NN_REP = 49;
 
     // http://nanomsg.org/v0.3/nn_pipeline.7.html
     var NN_PUSH = 80;

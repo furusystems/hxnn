@@ -86,7 +86,8 @@ extern "C"
         size_t valsize = sizeof(val);
         int ret = nn_getsockopt(val_socket(sock), val_int(level), val_int(option), &val, &valsize);
         if (ret < 0) {
-            val_throw(alloc_int(nn_errno()));
+            val_throw(alloc_string(nn_strerror(nn_errno())));
+            //val_throw(alloc_int(nn_errno()));
             val = alloc_int(999);
         }
 

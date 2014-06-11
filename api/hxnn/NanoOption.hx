@@ -6,7 +6,7 @@ package hxnn;
 @:enum
 abstract NanoOption(Int) from Int to Int
 {
-    // http://nanomsg.org/v0.3/nn_getsockopt.3.html
+    // generic socket options (NN_SOL_SOCKET level)
     var NN_LINGER            = 1;
     var NN_SNDBUF            = 2;
     var NN_RCVBUF            = 3;
@@ -15,12 +15,16 @@ abstract NanoOption(Int) from Int to Int
     var NN_RECONNECT_IVL     = 6;
     var NN_RECONNECT_IVL_MAX = 7;
     var NN_SNDPRIO           = 8;
+    var NN_RCVPRIO           = 9;
     var NN_SNDFD             = 10;
     var NN_RCVFD             = 11;
     var NN_DOMAIN            = 12;
     var NN_PROTOCOL          = 13;
     var NN_IPV4ONLY          = 14;
     var NN_SOCKET_NAME       = 15;
+
+    // TCP protocol options
+    var NN_TCP_NODELAY = 1;
 
     // http://nanomsg.org/v0.3/nn_reqrep.7.html
     var NN_REQ_RESEND_IVL = 1;
