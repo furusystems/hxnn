@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012-2013 250bpm s.r.o.  All rights reserved.
+    Copyright (c) 2012-2014 250bpm s.r.o.  All rights reserved.
     Copyright (c) 2013 GoPivotal, Inc.  All rights reserved.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,20 +32,24 @@ extern "C" {
 #include <stddef.h>
 
 /*  Handle DSO symbol visibility                                             */
-#if defined _WIN32
-#   if defined NN_EXPORTS
-#       define NN_EXPORT __declspec(dllexport)
-#   else
-#       define NN_EXPORT __declspec(dllimport)
-#   endif
+#if defined NN_NO_EXPORTS
+#   define NN_EXPORT
 #else
-#   if defined __SUNPRO_C
-#       define NN_EXPORT __global
-#   elif (defined __GNUC__ && __GNUC__ >= 4) || \
-          defined __INTEL_COMPILER || defined __clang__
-#       define NN_EXPORT __attribute__ ((visibility("default")))
+#   if defined _WIN32
+#      if defined NN_EXPORTS
+#          define NN_EXPORT __declspec(dllexport)
+#      else
+#          define NN_EXPORT __declspec(dllimport)
+#      endif
 #   else
-#       define NN_EXPORT
+#      if defined __SUNPRO_C
+#          define NN_EXPORT __global
+#      elif (defined __GNUC__ && __GNUC__ >= 4) || \
+             defined __INTEL_COMPILER || defined __clang__
+#          define NN_EXPORT __attribute__ ((visibility("default")))
+#      else
+#          define NN_EXPORT
+#      endif
 #   endif
 #endif
 
@@ -67,13 +71,13 @@ extern "C" {
 /*  www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html  */
 
 /*  The current interface version. */
-#define NN_VERSION_CURRENT 1
+#define NN_VERSION_CURRENT 2
 
 /*  The latest revision of the current interface. */
 #define NN_VERSION_REVISION 0
 
 /*  How many past interface versions are still supported. */
-#define NN_VERSION_AGE 1
+#define NN_VERSION_AGE 2
 
 /******************************************************************************/
 /*  Errors.                                                                   */
@@ -166,6 +170,9 @@ extern "C" {
 #define EISCONN (NN_HAUSNUMERO + 27)
 #define NN_EISCONN_DEFINED
 #endif
+#ifndef ESOCKTNOSUPPORT
+#define ESOCKTNOSUPPORT (NN_HAUSNUMERO + 28)
+#endif
 
 /*  Native nanomsg error codes.                                               */
 #ifndef ETERM
@@ -255,6 +262,7 @@ NN_EXPORT void nn_term (void);
 #define NN_MSG ((size_t) -1)
 
 NN_EXPORT void *nn_allocmsg (size_t size, int type);
+NN_EXPORT void *nn_reallocmsg (void *msg, size_t size);
 NN_EXPORT int nn_freemsg (void *msg);
 
 /******************************************************************************/
@@ -335,6 +343,7 @@ NN_INLINE struct nn_cmsghdr *nn_cmsg_nexthdr_ (const struct nn_msghdr *mhdr,
 #define NN_RECONNECT_IVL 6
 #define NN_RECONNECT_IVL_MAX 7
 #define NN_SNDPRIO 8
+#define NN_RCVPRIO 9
 #define NN_SNDFD 10
 #define NN_RCVFD 11
 #define NN_DOMAIN 12
