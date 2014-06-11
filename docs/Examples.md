@@ -4,7 +4,6 @@
 
 ```haxe
 import hxnn.*;
-import hxstd.vm.Thread;
 
 class Debug
 {
