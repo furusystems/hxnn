@@ -2,6 +2,9 @@
     <!-- Build file for nanomsg.ndll -->
     <!-- Install hxcpp and run with 'haxelib run hxcpp build.xml' -->
     <include name="${HXCPP}/build-tool/BuildCommon.xml" />
+    <include name="${HXCPP}/toolchain/linux-toolchain.xml" if="linux" />
+    <include name="${HXCPP}/toolchain/mac-toolchain.xml" if="macos" />
+    <include name="${HXCPP}/toolchain/cygwin-toolchain.xml" if="windows" />
 
     <!-- Set library search paths for nanomsg etc -->
     <set name="LIB_DIR" value="-Llib" unless="windows" />
@@ -13,10 +16,6 @@
     <files id="files">
         <!-- Set up include folder paths -->
         <compilerflag value="-I./../include" />
-
-        <!-- Special flags for compiling on MacOSX 64 bit. May need for linux 64bit too?  -->
-        <compilerflag value="-D_FILE_OFFSET_BITS=64" if="macos" />
-        <compilerflag value="-D_LARGE_FILES=64" if="macos" />
 
         <!-- List of cpp files to be compiled -->
         <file name="src/NanoMsg.cpp" />
@@ -35,7 +34,7 @@
 
         <!-- link to libnanomsg installed through homebrew -->
         <lib name="/usr/local/Cellar/nanomsg/0.3-beta/lib/libnanomsg.a" if="macos" />
-        <lib name="/usr/local/lib/libnanomsg.a" unless="macos" />
+        <lib name="/usr/local/lib/libnanomsg.a" if="windows" />
     </target>
 
     <!-- specifies default hxcpp build tool target -->
