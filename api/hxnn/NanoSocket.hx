@@ -4,6 +4,8 @@ package hxnn;
     import cpp.Lib;
 #elseif neko
     import neko.Lib;
+#else
+    #error "NanoSocket (and the whole hxnn library) is only supported on C++ and Neko targets."
 #end
 import hxnn.NanoDomain;
 import hxnn.NanoException;
