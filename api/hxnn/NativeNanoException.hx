@@ -1,18 +1,18 @@
 package hxnn;
 
 import haxe.PosInfos;
-import hxstd.Exception;
+import hxnn.NanoException;
 
 /**
  * Exceptions to be thrown when Exceptions from the C FFI need to be wrapped
  * or for any other kind of errors related to nanomsg.
  */
-class NanoException extends Exception
+class NativeNanoException extends NanoException
 {
     /**
      * @{inherit}
      */
-    public function new(msg:String = "Uncaught nanomsg exception", ?info:PosInfos):Void
+    public function new(msg:String = "Exception thrown by called FF", ?info:PosInfos):Void
     {
         super(msg, info);
     }

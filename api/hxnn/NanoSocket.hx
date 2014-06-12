@@ -11,6 +11,7 @@ import hxnn.NanoFlag;
 import hxnn.NanoLevel;
 import hxnn.NanoOption;
 import hxnn.NanoProtocol;
+import hxnn.NativeNanoException;
 import hxnn.TransportAddress;
 
 /**
@@ -60,7 +61,7 @@ class NanoSocket
         try {
             this.handle = NanoSocket.hxnn_socket(domain, protocol);
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
         this.conns  = new Array<Connection>();
     }
@@ -84,7 +85,7 @@ class NanoSocket
 
             return cnx;
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -105,7 +106,7 @@ class NanoSocket
             NanoSocket.hxnn_close(this.handle);
             this.handle = null;
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -128,7 +129,7 @@ class NanoSocket
 
             return cnx;
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -149,7 +150,7 @@ class NanoSocket
         try {
             return NanoSocket.hxnn_getsockopt(this.handle, level, option);
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -172,7 +173,7 @@ class NanoSocket
         try {
             return Lib.nekoToHaxe( NanoSocket.hxnn_recv(this.handle, bytes, flags) );
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -194,7 +195,7 @@ class NanoSocket
         try {
             return Lib.nekoToHaxe( NanoSocket.hxnn_recv_all(this.handle, flags) );
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -214,7 +215,7 @@ class NanoSocket
         try {
             NanoSocket.hxnn_setsockopt(this.handle, level, option, value);
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -233,7 +234,7 @@ class NanoSocket
             NanoSocket.hxnn_shutdown(this.handle, cnx);
             this.conns.remove(cnx);
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 
@@ -256,7 +257,7 @@ class NanoSocket
         try {
             return NanoSocket.hxnn_send(this.handle, Lib.haxeToNeko(msg), flags);
         } catch (ex:Dynamic) {
-            throw new NanoException(ex);
+            throw new NativeNanoException(ex);
         }
     }
 }
