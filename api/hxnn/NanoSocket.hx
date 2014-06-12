@@ -1,5 +1,10 @@
 package hxnn;
 
+#if cpp
+    import cpp.Lib;
+#elseif neko
+    import neko.Lib;
+#end
 import hxnn.NanoDomain;
 import hxnn.NanoException;
 import hxnn.NanoFlag;
@@ -22,22 +27,22 @@ class NanoSocket
         private static var hxnn_bind:Socket->String->Connection         = cpp.Lib.load("nanomsg", "hxnn_bind", 2);
         private static var hxnn_close:Socket->Void                      = cpp.Lib.load("nanomsg", "hxnn_close", 1);
         private static var hxnn_connect:Socket->String->Connection      = cpp.Lib.load("nanomsg", "hxnn_connect", 2);
-        private static var hxnn_getsockopt:Socket->Int->Int->Dynamic    = cpp.Lib.load("nanomsg", "hxnn_getsockopt", 3);
+        private static var hxnn_getsockopt:Socket->Int->Int->Int        = cpp.Lib.load("nanomsg", "hxnn_getsockopt", 3);
         private static var hxnn_recv:Socket->Int->NanoFlag->String      = cpp.Lib.load("nanomsg", "hxnn_recv", 3);
         private static var hxnn_recv_all:Socket->NanoFlag->String       = cpp.Lib.load("nanomsg", "hxnn_recv_all", 2);
         private static var hxnn_send:Socket->String->NanoFlag->Int      = cpp.Lib.load("nanomsg", "hxnn_send", 3);
-        private static var hxnn_setsockopt:Socket->NanoLevel->NanoOption->Dynamic->Void = cpp.Lib.load("nanomsg", "hxnn_setsockopt", 4);
+        private static var hxnn_setsockopt:Socket->NanoLevel->NanoOption->Int->Void = cpp.Lib.load("nanomsg", "hxnn_setsockopt", 4);
         private static var hxnn_shutdown:Socket->Connection->Void       = cpp.Lib.load("nanomsg", "hxnn_shutdown", 2);
         private static var hxnn_socket:NanoDomain->NanoProtocol->Socket = cpp.Lib.load("nanomsg", "hxnn_socket", 2);
     #elseif neko
         private static var hxnn_bind:Socket->String->Connection         = neko.Lib.load("nanomsg", "hxnn_bind", 2);
         private static var hxnn_close:Socket->Void                      = neko.Lib.load("nanomsg", "hxnn_close", 1);
         private static var hxnn_connect:Socket->String->Connection      = neko.Lib.load("nanomsg", "hxnn_connect", 2);
-        private static var hxnn_getsockopt:Socket->Int->Int->Dynamic    = neko.Lib.load("nanomsg", "hxnn_getsockopt", 3);
+        private static var hxnn_getsockopt:Socket->Int->Int->Int        = neko.Lib.load("nanomsg", "hxnn_getsockopt", 3);
         private static var hxnn_recv:Socket->Int->NanoFlag->String      = neko.Lib.load("nanomsg", "hxnn_recv", 3);
         private static var hxnn_recv_all:Socket->NanoFlag->String       = neko.Lib.load("nanomsg", "hxnn_recv_all", 2);
         private static var hxnn_send:Socket->String->NanoFlag->Int      = neko.Lib.load("nanomsg", "hxnn_send", 3);
-        private static var hxnn_setsockopt:Socket->NanoLevel->NanoOption->Dynamic->Void = neko.Lib.load("nanomsg", "hxnn_setsockopt", 4);
+        private static var hxnn_setsockopt:Socket->NanoLevel->NanoOption->Int->Void = neko.Lib.load("nanomsg", "hxnn_setsockopt", 4);
         private static var hxnn_shutdown:Socket->Connection->Void       = neko.Lib.load("nanomsg", "hxnn_shutdown", 2);
         private static var hxnn_socket:NanoDomain->NanoProtocol->Socket = neko.Lib.load("nanomsg", "hxnn_socket", 2);
     #end
@@ -87,7 +92,7 @@ class NanoSocket
         }
 
         try {
-            var cnx:Connection = NanoSocket.hxnn_bind(this.handle, address.toString());
+            var cnx:Connection = NanoSocket.hxnn_bind(this.handle, Lib.haxeToNeko(address.toString()));
             this.conns.push(cnx);
 
             return cnx;
@@ -131,7 +136,7 @@ class NanoSocket
         }
 
         try {
-            var cnx:Int = NanoSocket.hxnn_connect(this.handle, address.toString());
+            var cnx:Int = NanoSocket.hxnn_connect(this.handle, Lib.haxeToNeko(address.toString()));
             this.conns.push(cnx);
 
             return cnx;
@@ -146,9 +151,9 @@ class NanoSocket
      * @param hxnn.NanoLevel  level  the level on which the option is valid
      * @param hxnn.NanoOption option the option to get the value for
      *
-     * @return Dynamic the option's value
+     * @return Int the option's value
      */
-    public function getOption(level:NanoLevel, option:NanoOption):Dynamic
+    public function getOption(level:NanoLevel, option:NanoOption):Int
     {
         if (this.handle == null) {
             throw new NanoException("NanoSocket not available");
@@ -178,7 +183,7 @@ class NanoSocket
         }
 
         try {
-            return NanoSocket.hxnn_recv(this.handle, bytes, flags);
+            return Lib.nekoToHaxe( NanoSocket.hxnn_recv(this.handle, bytes, flags) );
         } catch (ex:Dynamic) {
             throw new NanoException(ex);
         }
@@ -200,7 +205,7 @@ class NanoSocket
         }
 
         try {
-            return NanoSocket.hxnn_recv_all(this.handle, flags);
+            return Lib.nekoToHaxe( NanoSocket.hxnn_recv_all(this.handle, flags) );
         } catch (ex:Dynamic) {
             throw new NanoException(ex);
         }
@@ -211,9 +216,9 @@ class NanoSocket
      *
      * @param hxnn.NanoLevel  level  the level on which the option is valid
      * @param hxnn.NanoOption option the option to set the value for
-     * @param Dynamic         value  the value to set for the option
+     * @param Int             value  the value to set for the option
      */
-    public function setOption(level:NanoLevel, option:NanoOption, value:Dynamic):Void
+    public function setOption(level:NanoLevel, option:NanoOption, value:Int):Void
     {
         if (this.handle == null) {
             throw new NanoException("NanoSocket not available");
@@ -262,7 +267,7 @@ class NanoSocket
         }
 
         try {
-            return NanoSocket.hxnn_send(this.handle, msg, flags);
+            return NanoSocket.hxnn_send(this.handle, Lib.haxeToNeko(msg), flags);
         } catch (ex:Dynamic) {
             throw new NanoException(ex);
         }
