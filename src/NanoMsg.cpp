@@ -154,6 +154,7 @@ extern "C"
         } else {
             val = alloc_string(buf);
         }
+        nn_freemsg(buf);
 
         return val;
     }
