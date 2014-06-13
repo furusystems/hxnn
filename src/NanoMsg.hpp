@@ -5,7 +5,8 @@
 #define  NEKO_COMPATIBLE 1
 #include <hx/CFFI.h>
 
-extern "C" {
+extern "C"
+{
     // aliases
     #define alloc_socket  alloc_int
     #define socket        int

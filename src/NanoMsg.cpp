@@ -221,7 +221,8 @@ extern "C"
             val = alloc_int(ret);
         } else {
             val = alloc_socket(ret);
-            val_gc((value)&val, finalize_socket);
+            // C++: val_gc(val, finalize_socket);
+            //Neko: val_gc((value)&val, finalize_socket);
         }
 
         return val;
